@@ -6,6 +6,7 @@ import sys
 import traceback
 import zipfile
 import codecs
+import mimetypes
 
 import cr_response
 
@@ -72,11 +73,14 @@ def deploy_artifact(source_bucket, zip_key, dest_bucket, dest_key='', filters=[]
       file_info = z.getinfo(filename)
       dest_file = f'{dest_key}{filename}'
       print(f'uploading file {dest_file} to {dest_bucket}')
+      content_type = mimetypes.guess_type(fileName)
+      if content_type is None:
+        content_type = 'binary/octet-stream'
       s3_resource.meta.client.upload_fileobj(
           filter_deployment(filename, z.open(filename), filters),
           Bucket=dest_bucket,
           Key=f'{dest_file}',
-          ExtraArgs={'Metadata': {'deployment': zip_key}}
+          ExtraArgs={'Metadata': {'deployment': zip_key}, 'Content-Type': content_type}
       )
 
 
