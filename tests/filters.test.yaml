@@ -1,0 +1,12 @@
+test_metadata:
+  type: config
+  name: filters
+  description: test setting file filters
+
+test_parameters:
+  APIEndpoint: dev
+
+deployment_filter:
+  - file: index.html
+    placeholder: placeholder32256
+    value: https://${APIEndpoint}.myapi.com

@@ -1,0 +1,28 @@
+
+deployer:
+  custom_policies:
+    s3_source:
+      action:
+        - s3:GetObject
+      resource:
+        - Fn::Sub: arn:aws:s3:::${DeploymentSourceBucket}/*
+    s3_dest:
+      action:
+        - s3:GetObject
+        - s3:PutObject
+        - s3:DeleteObject
+      resource:
+        - Fn::Sub: arn:aws:s3:::${DeploymentBucket}/*
+  roles:
+    default:
+      policies_inline:
+        - cloudwatch-logs
+        - s3_source
+        - s3_dest
+  functions:
+    S3Deployer:
+      role: default
+      code: lambdas/s3_deployer.py
+      runtime: python3.9
+      timeout: 120
+      handler: s3_deployer.handler
