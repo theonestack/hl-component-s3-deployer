@@ -73,7 +73,7 @@ def deploy_artifact(source_bucket, zip_key, dest_bucket, dest_key='', filters=[]
       file_info = z.getinfo(filename)
       dest_file = f'{dest_key}{filename}'
       print(f'uploading file {dest_file} to {dest_bucket}')
-      content_type = mimetypes.guess_type(filename)
+      content_type = mimetypes.guess_type(filename)[0]
       if content_type is None:
         content_type = 'binary/octet-stream'
       s3_resource.meta.client.upload_fileobj(
