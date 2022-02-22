@@ -80,7 +80,7 @@ def deploy_artifact(source_bucket, zip_key, dest_bucket, dest_key='', filters=[]
           filter_deployment(filename, z.open(filename), filters),
           Bucket=dest_bucket,
           Key=f'{dest_file}',
-          ExtraArgs={'Metadata': {'deployment': zip_key}, 'Content-Type': content_type}
+          ExtraArgs={'Metadata': {'deployment': zip_key}, 'ContentType': content_type}
       )
 
 
