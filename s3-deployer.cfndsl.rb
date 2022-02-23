@@ -9,6 +9,7 @@ CloudFormation do
     Property 'DeploymentSourceBucket', Ref(:DeploymentSourceBucket)
     Property 'DeploymentSourceKey', Ref(:DeploymentSourceKey)
     Property 'DeploymentBucket', Ref(:DeploymentBucket)
+    Property 'DeploymentKey', Ref(:DeploymentKey)
     Property 'DeploymentFilter', FnSub(deployment_filter.to_json()) unless deployment_filter.nil?
   end
 
