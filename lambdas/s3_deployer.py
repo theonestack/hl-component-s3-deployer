@@ -7,6 +7,7 @@ import traceback
 import zipfile
 import codecs
 import mimetypes
+import fnmatch
 
 import cr_response
 
@@ -107,7 +108,7 @@ def undeploy_artifact(source_bucket, zip_key, dest_bucket, dest_key=''):
 def filter_deployment(filename, source, filters):
   result = source
   for filter in filters:
-    if filename in filter['file']:
+    if fnmatch.fnmatch(filename, filter['file']):
       print(f"applying filter {filter['placeholder']}={filter['value']} to {filename}")
       source_str = result.read().decode('utf-8')
       source_str = source_str.replace(filter['placeholder'], filter['value'])
