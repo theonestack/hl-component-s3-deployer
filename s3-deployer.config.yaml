@@ -5,14 +5,22 @@ deployer:
       action:
         - s3:GetObject
       resource:
-        - Fn::Sub: arn:aws:s3:::${DeploymentSourceBucket}/*
+        - Fn::Join:
+          - ''
+          - - 'arn:aws:s3:::'
+            - Ref: DeploymentSourceBucket
+            - /*
     s3_dest:
       action:
         - s3:GetObject
         - s3:PutObject
         - s3:DeleteObject
       resource:
-        - Fn::Sub: arn:aws:s3:::${DeploymentBucket}/*
+        - Fn::Join:
+          - ''
+          - - 'arn:aws:s3:::'
+            - Ref: DeploymentBucket
+            - /*
   roles:
     default:
       policies_inline:
