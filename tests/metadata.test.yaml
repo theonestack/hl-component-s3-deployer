@@ -1,0 +1,10 @@
+test_metadata:
+  type: config
+  name: filters
+  description: test setting additional metadata
+
+test_parameters:
+  APIEndpoint: dev
+
+deployment_metadata: 
+  Key1: Value1   
