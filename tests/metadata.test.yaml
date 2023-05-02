@@ -1,6 +1,6 @@
 test_metadata:
   type: config
-  name: filters
+  name: metadata
   description: test setting additional metadata
 
 test_parameters:
