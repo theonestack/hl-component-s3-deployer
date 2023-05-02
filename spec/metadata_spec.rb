@@ -8,6 +8,6 @@ describe 'compiled component' do
     end      
   end
   
-  let(:template) { YAML.load_file("#{File.dirname(__FILE__)}/../out/tests/filters/s3-deployer.compiled.yaml") }
+  let(:template) { YAML.load_file("#{File.dirname(__FILE__)}/../out/tests/metadata/s3-deployer.compiled.yaml") }
   
 end
