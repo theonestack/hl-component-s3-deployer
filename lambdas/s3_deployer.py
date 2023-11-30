@@ -27,10 +27,15 @@ def handler(event, context):
       deployment_filter = json.loads(event['ResourceProperties']['DeploymentFilter'])
       print(f'using deployment filter:\n{json.dumps(deployment_filter)}')
 
+    deployment_metadata = {}
+    if 'DeploymentMetaData' in event['ResourceProperties']:
+      deployment_metadata = json.loads(event['ResourceProperties']['DeploymentMetaData'])
+      print(f'using deployment metadata:\n{json.dumps(deployment_metadata)}')      
+
     if request_type == 'Create':
       print(f'initial deployment from s3://{deployment_source_bucket}/{deployment_source_key} to s3://{deployment_bucket}/{deployment_key}')
       event['PhysicalResourceId'] = f'{deployment_source_bucket}/{deployment_source_key}'
-      deploy_artifact(deployment_source_bucket, deployment_source_key, deployment_bucket, deployment_key, deployment_filter)
+      deploy_artifact(deployment_source_bucket, deployment_source_key, deployment_bucket, deployment_key, deployment_filter, deployment_metadata)
       r = cr_response.CustomResourceResponse(event)
       r.respond()
       return
@@ -46,7 +51,7 @@ def handler(event, context):
         r.respond()
         return
       else:
-        deploy_artifact(deployment_source_bucket, deployment_source_key, deployment_bucket, deployment_key, deployment_filter)
+        deploy_artifact(deployment_source_bucket, deployment_source_key, deployment_bucket, deployment_key, deployment_filter, deployment_metadata)
         event['PhysicalResourceId'] = f'{deployment_source_bucket}/{deployment_source_key}'
         r = cr_response.CustomResourceResponse(event)
         r.respond()
@@ -64,7 +69,7 @@ def handler(event, context):
     r.respond_error(str(ex))
     return
 
-def deploy_artifact(source_bucket, zip_key, dest_bucket, dest_key='', filters=[]):
+def deploy_artifact(source_bucket, zip_key, dest_bucket, dest_key='', filters=[], metadata={}):
   s3_resource = boto3.resource('s3')
   zip_obj = s3_resource.Object(bucket_name=source_bucket, key=zip_key)
   buffer = io.BytesIO(zip_obj.get()["Body"].read())
@@ -77,11 +82,12 @@ def deploy_artifact(source_bucket, zip_key, dest_bucket, dest_key='', filters=[]
       content_type = mimetypes.guess_type(filename)[0]
       if content_type is None:
         content_type = 'binary/octet-stream'
+      metadata.append({'deployment': zip_key})
       s3_resource.meta.client.upload_fileobj(
           filter_deployment(filename, z.open(filename), filters),
           Bucket=dest_bucket,
           Key=f'{dest_file}',
-          ExtraArgs={'Metadata': {'deployment': zip_key}, 'ContentType': content_type}
+          ExtraArgs={'Metadata': metadata, 'ContentType': content_type}
       )
 
 
