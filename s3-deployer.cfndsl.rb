@@ -3,9 +3,11 @@ CloudFormation do
 
   deployment_filter = external_parameters.fetch(:deployment_filter, nil)
   deployment_metadata = external_parameters.fetch(:deployment_metadata, nil)
+  deletion_policy = external_parameters.fetch(:deletion_policy, nil)
 
   Resource("S3DeployerCR") do
     Type 'Custom::S3Deployer'
+    DeletionPolicy deletion_policy unless deletion_policy.nil?
     Property 'ServiceToken',FnGetAtt('S3Deployer','Arn')
     Property 'DeploymentSourceBucket', Ref(:DeploymentSourceBucket)
     Property 'DeploymentSourceKey', Ref(:DeploymentSourceKey)
