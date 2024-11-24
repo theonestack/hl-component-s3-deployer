@@ -13,6 +13,7 @@ CloudFormation do
     Property 'DeploymentKey', Ref(:DeploymentKey)
     Property 'DeploymentFilter', FnSub(deployment_filter.to_json()) unless deployment_filter.nil?
     Property 'DeploymentMetaData', FnSub(deployment_metadata.to_json()) unless deployment_metadata.nil?
+    Property 'DeploymentCleanup', Ref(:DeploymentCleanup)
   end
 
 end

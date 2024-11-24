@@ -58,7 +58,8 @@ def handler(event, context):
         return
 
     if request_type == 'Delete':
-      undeploy_artifact(deployment_source_bucket, deployment_source_key, deployment_bucket, deployment_key)
+      if event['ResourceProperties']['DeploymentCleanup'] == 'true':
+        undeploy_artifact(deployment_source_bucket, deployment_source_key, deployment_bucket, deployment_key)
       r = cr_response.CustomResourceResponse(event)
       r.respond()
       return
