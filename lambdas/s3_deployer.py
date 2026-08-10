@@ -27,10 +27,12 @@ def handler(event, context):
       deployment_filter = json.loads(event['ResourceProperties']['DeploymentFilter'])
       print(f'using deployment filter:\n{json.dumps(deployment_filter)}')
 
-    deployment_metadata = {}
+    deployment_metadata = []
     if 'DeploymentMetaData' in event['ResourceProperties']:
-      deployment_metadata = json.loads(event['ResourceProperties']['DeploymentMetaData'])
-      print(f'using deployment metadata:\n{json.dumps(deployment_metadata)}')      
+      deployment_metadata = normalize_metadata_rules(
+        json.loads(event['ResourceProperties']['DeploymentMetaData'])
+      )
+      print(f'using deployment metadata:\n{json.dumps(deployment_metadata)}')
 
     if request_type == 'Create':
       print(f'initial deployment from s3://{deployment_source_bucket}/{deployment_source_key} to s3://{deployment_bucket}/{deployment_key}')
@@ -70,7 +72,35 @@ def handler(event, context):
     r.respond_error(str(ex))
     return
 
-def deploy_artifact(source_bucket, zip_key, dest_bucket, dest_key='', filters=[], metadata={}):
+def normalize_metadata_rules(raw):
+  if not raw:
+    return []
+  # Legacy flat dict: apply as user metadata to all files
+  if isinstance(raw, dict):
+    return [{'file': '*', 'metadata': raw, 'headers': {}}]
+  return [
+    {
+      'file': rule['file'],
+      'metadata': rule.get('metadata') or {},
+      'headers': rule.get('headers') or {},
+    }
+    for rule in raw
+  ]
+
+def resolve_extra_args(filename, zip_key, rules, content_type):
+  metadata = {}
+  headers = {'ContentType': content_type}
+  for rule in rules:
+    if fnmatch.fnmatch(filename, rule['file']):
+      print(f"applying metadata rule file={rule['file']} to {filename}")
+      metadata.update(rule['metadata'])
+      headers.update(rule['headers'])
+  metadata['deployment'] = zip_key
+  extra = dict(headers)
+  extra['Metadata'] = metadata
+  return extra
+
+def deploy_artifact(source_bucket, zip_key, dest_bucket, dest_key='', filters=[], metadata_rules=[]):
   s3_resource = boto3.resource('s3')
   zip_obj = s3_resource.Object(bucket_name=source_bucket, key=zip_key)
   buffer = io.BytesIO(zip_obj.get()["Body"].read())
@@ -83,12 +113,12 @@ def deploy_artifact(source_bucket, zip_key, dest_bucket, dest_key='', filters=[]
       content_type = mimetypes.guess_type(filename)[0]
       if content_type is None:
         content_type = 'binary/octet-stream'
-      metadata['deployment'] = zip_key
+      extra_args = resolve_extra_args(filename, zip_key, metadata_rules, content_type)
       s3_resource.meta.client.upload_fileobj(
           filter_deployment(filename, z.open(filename), filters),
           Bucket=dest_bucket,
           Key=f'{dest_file}',
-          ExtraArgs={'Metadata': metadata, 'ContentType': content_type}
+          ExtraArgs=extra_args
       )
 
 
