@@ -6,5 +6,15 @@ test_metadata:
 test_parameters:
   APIEndpoint: dev
 
-deployment_metadata: 
-  Key1: Value1   
+deployment_metadata:
+  - file: "*"
+    metadata:
+      Key1: Value1
+    headers:
+      CacheControl: "public, max-age=86400"
+  - file: "*.html"
+    headers:
+      CacheControl: "no-cache, no-store, must-revalidate"
+  - file: "assets/*"
+    headers:
+      CacheControl: "public, max-age=31536000, immutable"

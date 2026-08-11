@@ -1,4 +1,5 @@
 require 'yaml'
+require 'json'
 
 describe 'compiled component' do
   
@@ -9,5 +10,10 @@ describe 'compiled component' do
   end
   
   let(:template) { YAML.load_file("#{File.dirname(__FILE__)}/../out/tests/metadata/s3-deployer.compiled.yaml") }
+
+  it 'passes DeploymentMetaData as a list of file rules' do
+    metadata = template['Resources']['S3DeployerCR']['Properties']['DeploymentMetaData']
+    expect(metadata).not_to be_nil
+  end
   
 end
