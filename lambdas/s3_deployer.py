@@ -8,6 +8,7 @@ import zipfile
 import codecs
 import mimetypes
 import fnmatch
+import time
 
 import cr_response
 
@@ -18,9 +19,14 @@ def handler(event, context):
     deployment_source_key = event['ResourceProperties']['DeploymentSourceKey']
     deployment_bucket = event['ResourceProperties']['DeploymentBucket']
     deployment_key = ''
+    deployment_distribution = ''
+
     if 'DeploymentKey' in event['ResourceProperties']:
       deployment_key = event['ResourceProperties']['DeploymentKey']
     request_type = event['RequestType']
+
+    if 'DeploymentDistribution' in event['ResourceProperties']:
+      deployment_distribution = event['ResourceProperties']['DeploymentDistribution']
 
     deployment_filter = []
     if 'DeploymentFilter' in event['ResourceProperties']:
@@ -52,6 +58,10 @@ def handler(event, context):
         return
       else:
         deploy_artifact(deployment_source_bucket, deployment_source_key, deployment_bucket, deployment_key, deployment_filter, deployment_metadata)
+
+        if deployment_distribution != '':
+          invalidate_distribution(deployment_distribution)
+
         event['PhysicalResourceId'] = f'{deployment_source_bucket}/{deployment_source_key}'
         r = cr_response.CustomResourceResponse(event)
         r.respond()
@@ -120,3 +130,17 @@ def filter_deployment(filename, source, filters):
       source_str = source_str.replace(filter['placeholder'], filter['value'])
       result = io.BytesIO(source_str.encode('utf-8'))
   return  result
+
+def invalidate_distribution(distribution_id):
+  cloudfront = boto3.client('cloudfront')
+  cloudfront.create_invalidation(
+    DistributionId=distribution_id,
+    InvalidationBatch={
+        'Paths': {
+            'Quantity': 1,
+            'Items': [
+                '/*',
+            ]
+        },
+        'CallerReference': str(time.time())
+    })

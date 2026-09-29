@@ -1,6 +1,11 @@
 
 deployer:
   custom_policies:
+    cloudfront_invalidation:
+      action:
+        - cloudfront:CreateInvalidation
+      resource: 
+        - '*'
     s3_source:
       action:
         - s3:GetObject
@@ -31,6 +36,6 @@ deployer:
     S3Deployer:
       role: default
       code: lambdas/s3_deployer.py
-      runtime: python3.11
+      runtime: python3.14
       timeout: 120
       handler: s3_deployer.handler

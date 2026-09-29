@@ -5,6 +5,7 @@ CfhighlanderTemplate do
       ComponentParam 'DeploymentSourceKey'
       ComponentParam 'DeploymentBucket'
       ComponentParam 'DeploymentKey', ''
+      ComponentParam 'DeploymentDistribution', ''
     end
   
     LambdaFunctions 'deployer'
