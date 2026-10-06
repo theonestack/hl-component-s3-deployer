@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: S3Deployer CloudFormation macro - expands HLComponent::S3Deployer::Deployment resources into Custom::S3Deployer resources
+
+Parameters:
+  SourceBucketPattern:
+    Type: String
+    Default: '*'
+    Description: Bucket name (wildcards allowed) the deployer can read deployment zip files from
+  DestinationBucketPattern:
+    Type: String
+    Default: '*'
+    Description: Bucket name (wildcards allowed) the deployer can deploy files to
+  SourceBucketAccountId:
+    Type: String
+    Default: ''
+    AllowedPattern: ^(\d{12})?$
+    Description: Account that owns the source buckets, leave blank for the account the macro is deployed in
+  DestinationBucketAccountId:
+    Type: String
+    Default: ''
+    AllowedPattern: ^(\d{12})?$
+    Description: Account that owns the destination buckets, leave blank for the account the macro is deployed in
+
+Conditions:
+  SourceAccountIsLocal: !Equals [!Ref SourceBucketAccountId, '']
+  DestinationAccountIsLocal: !Equals [!Ref DestinationBucketAccountId, '']
+
+Resources:
+  DeployerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Deploys files from a zip file to an S3 bucket
+      CodeUri: lambdas
+      Handler: s3_deployer.handler
+      Runtime: python3.14
+      Timeout: 120
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Sid: S3Source
+              Effect: Allow
+              Action:
+                - s3:GetObject
+              Resource: !Sub arn:${AWS::Partition}:s3:::${SourceBucketPattern}/*
+              Condition:
+                StringEquals:
+                  s3:ResourceAccount: !If [SourceAccountIsLocal, !Ref AWS::AccountId, !Ref SourceBucketAccountId]
+            - Sid: S3Destination
+              Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:PutObject
+                - s3:DeleteObject
+              Resource: !Sub arn:${AWS::Partition}:s3:::${DestinationBucketPattern}/*
+              Condition:
+                StringEquals:
+                  s3:ResourceAccount: !If [DestinationAccountIsLocal, !Ref AWS::AccountId, !Ref DestinationBucketAccountId]
+
+  MacroFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Transforms HLComponent::S3Deployer::Deployment resources into Custom::S3Deployer resources
+      CodeUri: macro
+      Handler: transform.handler
+      Runtime: python3.14
+      Timeout: 30
+      Environment:
+        Variables:
+          DEPLOYER_FUNCTION_ARN: !GetAtt DeployerFunction.Arn
+
+  Macro:
+    Type: AWS::CloudFormation::Macro
+    Properties:
+      Name: HLComponentS3Deployer
+      Description: Expands HLComponent::S3Deployer::Deployment resources into Custom::S3Deployer resources
+      FunctionName: !GetAtt MacroFunction.Arn
+
+Outputs:
+  MacroName:
+    Value: HLComponentS3Deployer
+  DeployerFunctionArn:
+    Value: !GetAtt DeployerFunction.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-DeployerFunctionArn

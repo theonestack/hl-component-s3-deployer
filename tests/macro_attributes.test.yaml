@@ -1,0 +1,19 @@
+test_metadata:
+  type: macro
+  name: macro_attributes
+  description: test resource attributes are kept on the custom resource
+
+template:
+  Conditions:
+    IsProd: !Equals [prod, prod]
+  Resources:
+    WebsiteBucket:
+      Type: AWS::S3::Bucket
+    WebsiteDeployment:
+      Type: HLComponent::S3Deployer::Deployment
+      Condition: IsProd
+      DependsOn: WebsiteBucket
+      Properties:
+        DeploymentSourceBucket: artifacts
+        DeploymentSourceKey: website.zip
+        DeploymentBucket: !Ref WebsiteBucket

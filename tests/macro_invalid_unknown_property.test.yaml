@@ -1,0 +1,14 @@
+test_metadata:
+  type: macro
+  name: macro_invalid_unknown_property
+  description: fails when an unsupported property is set
+
+template:
+  Resources:
+    WebsiteDeployment:
+      Type: HLComponent::S3Deployer::Deployment
+      Properties:
+        DeploymentSourceBucket: artifacts
+        DeploymentSourceKey: website.zip
+        DeploymentBucket: website
+        Bogus: value

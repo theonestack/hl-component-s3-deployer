@@ -4,7 +4,7 @@ describe 'compiled component' do
   
   context 'cftest' do
     it 'compiles test' do
-      expect(system("cfhighlander cftest #{@validate} --tests tests/metadata.test.yaml")).to be_truthy
+      expect(system("HLComponent cftest #{@validate} --tests tests/metadata.test.yaml")).to be_truthy
     end      
   end
   

@@ -1,0 +1,15 @@
+test_metadata:
+  type: macro
+  name: macro_metadata
+  description: test setting additional metadata
+
+template:
+  Resources:
+    WebsiteDeployment:
+      Type: HLComponent::S3Deployer::Deployment
+      Properties:
+        DeploymentSourceBucket: artifacts
+        DeploymentSourceKey: website.zip
+        DeploymentBucket: website
+        DeploymentMetaData:
+          Key1: Value1

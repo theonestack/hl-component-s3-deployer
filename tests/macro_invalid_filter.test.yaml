@@ -1,0 +1,16 @@
+test_metadata:
+  type: macro
+  name: macro_invalid_filter
+  description: fails when a filter entry is incomplete
+
+template:
+  Resources:
+    WebsiteDeployment:
+      Type: HLComponent::S3Deployer::Deployment
+      Properties:
+        DeploymentSourceBucket: artifacts
+        DeploymentSourceKey: website.zip
+        DeploymentBucket: website
+        DeploymentFilter:
+          - file: index.html
+            value: https://dev.myapi.com

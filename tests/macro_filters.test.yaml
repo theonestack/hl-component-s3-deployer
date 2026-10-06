@@ -1,0 +1,21 @@
+test_metadata:
+  type: macro
+  name: macro_filters
+  description: test setting file filters using intrinsic functions
+
+template:
+  Parameters:
+    APIEndpoint:
+      Type: String
+  Resources:
+    WebsiteDeployment:
+      Type: HLComponent::S3Deployer::Deployment
+      Properties:
+        DeploymentSourceBucket: artifacts
+        DeploymentSourceKey: website.zip
+        DeploymentBucket: website
+        DeploymentKey: app/
+        DeploymentFilter:
+          - file: index.html
+            placeholder: placeholder32256
+            value: !Sub https://${APIEndpoint}.myapi.com

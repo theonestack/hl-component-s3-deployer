@@ -11,6 +11,7 @@ CloudFormation do
     Property 'DeploymentSourceKey', Ref(:DeploymentSourceKey)
     Property 'DeploymentBucket', Ref(:DeploymentBucket)
     Property 'DeploymentKey', Ref(:DeploymentKey)
+    Property 'DeploymentDistribution', Ref(:DeploymentDistribution)
     Property 'DeploymentFilter', FnSub(deployment_filter.to_json()) unless deployment_filter.nil?
     Property 'DeploymentMetaData', FnSub(deployment_metadata.to_json()) unless deployment_metadata.nil?
   end

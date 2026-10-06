@@ -1,0 +1,15 @@
+test_metadata:
+  type: macro
+  name: macro_default
+  description: expands a deployment with only the required properties
+
+template:
+  Resources:
+    WebsiteBucket:
+      Type: AWS::S3::Bucket
+    WebsiteDeployment:
+      Type: HLComponent::S3Deployer::Deployment
+      Properties:
+        DeploymentSourceBucket: artifacts
+        DeploymentSourceKey: website.zip
+        DeploymentBucket: !Ref WebsiteBucket

@@ -1,0 +1,11 @@
+test_metadata:
+  type: macro
+  name: macro_invalid_missing_property
+  description: fails when a required property is missing
+
+template:
+  Resources:
+    WebsiteDeployment:
+      Type: HLComponent::S3Deployer::Deployment
+      Properties:
+        DeploymentBucket: website
